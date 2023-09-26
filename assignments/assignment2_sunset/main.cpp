@@ -21,10 +21,10 @@ struct Vertex {
 };
 Vertex vertices[4] = {
 	 //x    y    z    u    v
-	{ -0.5,-0.5, 0.0, 0.0, 0.0 }, //Bottom left
-	{  0.5,-0.5, 0.0, 1.0, 0.0 }, //Bottom right
-	{  0.5, 0.5, 0.0, 1.0, 1.0 },  //Top right
-	{ -0.5, 0.5, 0.0, 0.0, 1.0 }  //Top left
+	{ -1.0,-1.0, 0.0, 0.0, 0.0 }, //Bottom left
+	{  1.0,-1.0, 0.0, 1.0, 0.0 }, //Bottom right
+	{  1.0, 1.0, 0.0, 1.0, 1.0 },  //Top right
+	{ -1.0, 1.0, 0.0, 0.0, 1.0 }  //Top left
 };
 
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
@@ -34,6 +34,12 @@ unsigned int indices[6] = {
 	2, 3, 0  //Triangle 2
 };
 
+float dayColor[3] = { 0.5f, 0.25f, 0.0f };
+float nightColor[3] = { 0.0f, 0.0f, 0.1f };
+float mountainColor[3] = { 0.471f, 0.259f, 0.031f };
+float sunRadius = 0.3f;
+float sunSpeed = 1.0f;
+float sunColor[3] = { 1.0f, 0.8f, 0.2f };
 
 float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
 float triangleBrightness = 1.0f;
@@ -76,10 +82,16 @@ int main() {
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Set uniforms
-		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
-		shader.setFloat("_Brightness", triangleBrightness);
+		//Set uniforms		
 		shader.setFloat("iTime", (float)glfwGetTime());
+		shader.setVec2("iResolution", SCREEN_WIDTH, SCREEN_HEIGHT);
+		shader.setVec3("sunColor", sunColor[0], sunColor[1], sunColor[2]);
+		shader.setVec3("dayColor", dayColor[0], dayColor[1], dayColor[2]);
+		shader.setVec3("nightColor", nightColor[0], nightColor[1], nightColor[2]);
+		shader.setVec3("mountainColor", mountainColor[0], mountainColor[1], mountainColor[2]);
+		shader.setFloat("sunRadius", sunRadius);
+		shader.setFloat("sunSpeed", sunSpeed);
+
 
 		//Wireframe
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -96,8 +108,14 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
-			ImGui::ColorEdit3("Color", triangleColor);
-			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
+			ImGui::ColorEdit3("Sun Color", sunColor);
+			ImGui::ColorEdit3("Day Color", dayColor);
+			ImGui::ColorEdit3("Night Color", nightColor);
+			ImGui::ColorEdit3("Mountain Color", mountainColor);
+			ImGui::SliderFloat("Sun Radius", &sunRadius, 0.0f, 2.0f);
+			ImGui::SliderFloat("Sun Speed", &sunSpeed, 0.0f, 10.0f);
+
+			
 			ImGui::End();
 			if (showImGUIDemoWindow) {
 				ImGui::ShowDemoWindow(&showImGUIDemoWindow);
