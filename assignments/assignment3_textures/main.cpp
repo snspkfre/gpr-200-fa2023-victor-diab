@@ -61,6 +61,17 @@ int main() {
 
 
 	unsigned int brickTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
+	/*
+	unsigned int textureA = loadTexture("assets/bricks.jpg", GL_REPEAT, GL_LINEAR);
+	unsigned int textureB = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
+
+	//Place textureA in unit 0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureA);
+	//Place textureB in unit 1
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textureB);
+	*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 
 	unsigned int quadVAO = createVAO(vertices, 4, indices, 6);
@@ -74,6 +85,8 @@ int main() {
 
 		//Set uniforms
 		shader.use();
+		//shader.setInt("_Texture", 0);
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
