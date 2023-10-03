@@ -33,6 +33,8 @@ unsigned short indices[6] = {
 	2, 3, 0
 };
 
+float distStrength = 0.5f, moveSpeed = 1.0f, tiling = 1.0f, charSize = 1.0f, distSpeed = 1.0f;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -72,21 +74,57 @@ int main() {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureB);
 	*/
-	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	
+	ew::Shader backgroundShader("assets/background.vert", "assets/background.frag");
+	ew::Shader characterShader("assets/character.vert", "assets/character.frag");
 
 	unsigned int quadVAO = createVAO(vertices, 4, indices, 6);
 
-	glBindVertexArray(quadVAO);
+	
+	unsigned int textureA = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
+	unsigned int textureB = loadTexture("assets/smiley.png", GL_REPEAT, GL_LINEAR);
+
+	unsigned int distortion = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
+	unsigned int character = loadTexture("assets/dappergrape.png", GL_REPEAT, GL_NEAREST);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		
+		glBindVertexArray(quadVAO);
+
+		backgroundShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureA);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureB);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, distortion);
 
 		//Set uniforms
-		shader.use();
-		//shader.setInt("_Texture", 0);
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		backgroundShader.setInt("_BG1Texture", 0);
+		backgroundShader.setInt("_BG2Texture", 1);
+		backgroundShader.setInt("_NoiseTexture", 2);
+		backgroundShader.setFloat("iTime", (float)glfwGetTime());
+		backgroundShader.setFloat("_DistStrength", distStrength);
+		backgroundShader.setFloat("_DistSpeed", distSpeed);
+		backgroundShader.setFloat("_Tiling", tiling);
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		characterShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, character);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		//Set uniforms
+		characterShader.setInt("_Texture", 0);
+		characterShader.setFloat("iTime", (float)glfwGetTime());
+		characterShader.setFloat("_moveSpeed", moveSpeed);
+		characterShader.setFloat("_charSize", charSize);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -97,6 +135,11 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
+			ImGui::SliderFloat("Distortion Strength", &distStrength, 0.0f, 5.0f);
+			ImGui::SliderFloat("Distortion Speed", &distSpeed, 1.0f, 5.0f);
+			ImGui::SliderFloat("Bounce Speed", &moveSpeed, 0.0f, 10.0f);
+			ImGui::SliderFloat("Character Size", &charSize, 0.0f, 10.0f);
+			ImGui::SliderFloat("Tiling", &tiling, 1.0f, 10.0f);
 			ImGui::End();
 
 			ImGui::Render();
