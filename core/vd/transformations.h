@@ -69,12 +69,12 @@ namespace vd {
 		ew::Mat4 getModelMatrix() const {
 			ew::Mat4 mat = Identity();
 			ew::Mat4 sc = Scale(scale);
-			ew::Mat4 rot = RotateX(rotation.x);
+			ew::Mat4 rot = RotateZ(rotation.z); 
+			rot = rot * RotateX(rotation.x);
 			rot = rot * RotateY(rotation.y);
-			rot = rot * RotateZ(rotation.z);
 			ew::Mat4 trans = Translate(position);
-
-			return mat * sc * rot * trans;
+			//return Identity();
+			return trans * rot * sc;
 		}
 	};
 }

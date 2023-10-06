@@ -19,6 +19,8 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
 
+const int NUM_CUBES = 4;
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -53,8 +55,21 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
-	vd::Transform transform;
-	
+	vd::Transform tf[4];
+	ew::Vec3 pos[4];
+
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			pos[2*i + j] = ew::Vec3(-0.5 + i, -0.5 + j , 0);
+		}
+	}
+
+	for (int i = 0; i < NUM_CUBES; i++)
+	{
+		tf[i].position = pos[i];
+	}
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
 	
@@ -63,11 +78,12 @@ int main() {
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//Set uniforms
 		shader.use();
-		shader.setMat4("_Model", transform.getModelMatrix());
-		cubeMesh.draw();
+		for (int i = 0; i < NUM_CUBES; i++)
+		{
+			shader.setMat4("_Model", tf[i].getModelMatrix());
+			cubeMesh.draw();
+		}
 
 		//Render UI
 		{
@@ -77,9 +93,23 @@ int main() {
 
 			ImGui::Begin("Transform");
 
-			ImGui::DragFloat3("Position", &transform.position.x, 0.05f);
-			ImGui::DragFloat3("Rotation", &transform.rotation.x, 1.0f);
-			ImGui::DragFloat3("Scale", &transform.scale.x, 0.05f);
+			for (size_t i = 0; i < NUM_CUBES; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Transform")) {
+					ImGui::DragFloat3("Position", &tf[i].position.x, 0.05f);
+					ImGui::DragFloat3("Rotation", &tf[i].rotation.x, 1.0f);
+					ImGui::DragFloat3("Scale", &tf[i].scale.x, 0.05f);
+					
+					if (ImGui::Button("Reset"))
+					{
+						tf[i].position = pos[i];
+						tf[i].rotation = ew::Vec3(0.0f, 0.0f, 0.0f); //Euler angles (degrees)
+						tf[i].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+					}
+				}
+				ImGui::PopID();
+			}
 			
 			ImGui::End();
 
