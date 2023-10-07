@@ -57,13 +57,19 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	vd::Transform tf[4];
 	ew::Vec3 pos[4];
+	bool anim[4];
 
 	for (int i = 0; i < 2; i++)
 	{
 		for (int j = 0; j < 2; j++)
 		{
-			pos[2*i + j] = ew::Vec3(-0.5 + i, -0.5 + j , 0);
+			pos[2*i + j] = ew::Vec3(-0.5 + j, 0.5 - i, 0);
 		}
+	}
+
+	for (int i = 0; i < NUM_CUBES; i++)
+	{
+		anim[i] = true;
 	}
 
 	for (int i = 0; i < NUM_CUBES; i++)
@@ -97,18 +103,26 @@ int main() {
 			{
 				ImGui::PushID(i);
 				if (ImGui::CollapsingHeader("Transform")) {
-					ImGui::DragFloat3("Position", &tf[i].position.x, 0.05f);
-					ImGui::DragFloat3("Rotation", &tf[i].rotation.x, 1.0f);
-					ImGui::DragFloat3("Scale", &tf[i].scale.x, 0.05f);
-					
-					if (ImGui::Button("Reset"))
+					ImGui::Checkbox("Amnimating", &anim[i]);
+					if(!anim[i])
 					{
-						tf[i].position = pos[i];
-						tf[i].rotation = ew::Vec3(0.0f, 0.0f, 0.0f); //Euler angles (degrees)
-						tf[i].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						ImGui::DragFloat3("Position", &tf[i].position.x, 0.05f);
+						ImGui::DragFloat3("Rotation", &tf[i].rotation.x, 1.0f);
+						ImGui::DragFloat3("Scale", &tf[i].scale.x, 0.05f);
+
+						if (ImGui::Button("Reset"))
+						{
+							tf[i].position = pos[i];
+							tf[i].rotation = ew::Vec3(5.0f, 0.0f, 0.0f); //Euler angles (degrees)
+							tf[i].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						}
 					}
 				}
 				ImGui::PopID();
+				if (anim[i])
+				{
+					tf[i].rotation.y++;
+				}
 			}
 			
 			ImGui::End();
