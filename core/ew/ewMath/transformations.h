@@ -5,6 +5,7 @@
 #pragma once
 #include "mat4.h"
 #include "vec3.h"
+#include "ewMath.h"
 
 namespace ew {
 	//Identity matrix
@@ -67,4 +68,42 @@ namespace ew {
 			0.0f, 0.0f, 0.0f, 1.0f
 		);
 	};
+
+	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
+		ew::Vec3 f = ew::Normalize(eye - target);
+		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));
+		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));
+		return Mat4(
+			r.x, r.y, r.z, 0,
+			u.x, u.y, u.z, 0,
+			f.x, f.y, f.z, 0,
+			0.0f, 0.0f, 0.0f, 1.0f
+		);
+			//use ew::Cross for cross product!
+	};
+	//Orthographic projection
+	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
+		float r = height * aspect / 2.0f;
+		float t = height / 2.0f;
+		float l = r * -1;
+		float b = t * -1;
+
+		return Mat4(
+			2/(r-l), 0.0f, 0.0f, -(r+l)/(r-l),
+			0.0f, 2/(t-b), 0.0f, -(t + b) /( t - b),
+			0.0f, 0.0f, -2/(far-near), -(far + near)/(far - near),
+			0.0f, 0.0f, 0.0f, 1.0f
+		);
+	};
+	//Perspective projection
+	//fov = vertical aspect ratio (radians)
+	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
+		return ew::Mat4(
+			1/(tanf(fov/2)*aspect), 0, 0, 0,
+			0, 1/(tanf(fov/2)), 0, 0,
+			0, 0, (near+far)/(near-far), (2*far*near)/(near-far),
+			0, 0, -1, 0
+		);
+	};
+
 }
