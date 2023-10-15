@@ -11,6 +11,7 @@
 #include <ew/shader.h>
 #include <ew/procGen.h>
 #include <ew/transform.h>
+#include <vd/camera.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -20,6 +21,7 @@ const int SCREEN_HEIGHT = 720;
 
 const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
+vd::Camera cam;
 
 int main() {
 	printf("Initializing...");
@@ -90,7 +92,15 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
-			ImGui::Text("Cubes");
+			ImGui::DragFloat3("Position", &cam.position.x, 0.05f);
+			ImGui::DragFloat3("Target", &cam.target.x, 0.05f);
+			ImGui::Checkbox("Orthographic", &cam.orthographic);
+			if (cam.orthographic)
+				ImGui::DragFloat3("Ortho Height", &, 0.05f);
+			else
+				ImGui::SliderFloat("fov", &cam.orthoSize, 0, 180);
+			
+			/*ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
 			{
 				ImGui::PushID(i);
@@ -100,8 +110,11 @@ int main() {
 					ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
 				}
 				ImGui::PopID();
-			}
+			}*/
 			ImGui::Text("Camera");
+
+			
+			
 			ImGui::End();
 			
 			ImGui::Render();
