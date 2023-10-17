@@ -12,6 +12,7 @@
 #include <ew/procGen.h>
 #include <ew/transform.h>
 #include <vd/camera.h>
+#include <vd/transformations.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -20,8 +21,12 @@ const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
 
 const int NUM_CUBES = 4;
-ew::Transform cubeTransforms[NUM_CUBES];
+vd::Transform cubeTransforms[NUM_CUBES];
 vd::Camera cam;
+
+bool orbitting = true;
+bool funny = false;
+bool funny2 = false;
 
 int main() {
 	printf("Initializing...");
@@ -59,7 +64,6 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
-	cam.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 	//Cube positions
 	for (size_t i = 0; i < NUM_CUBES; i++)
@@ -76,14 +80,13 @@ int main() {
 
 		//Set uniforms
 		shader.use();
-
+		shader.setMat4("_View", cam.ViewMatrix());
+		shader.setMat4("_Projection", cam.ProjectionMatrix());
 		//TODO: Set model matrix uniform
 		for (size_t i = 0; i < NUM_CUBES; i++)
 		{
 			//Construct model matrix
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
-			shader.setMat4("_View", cam.ViewMatrix());
-			shader.setMat4("_Projection", cam.ProjectionMatrix());
 			cubeMesh.draw();
 		}
 
@@ -95,13 +98,34 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Text("Camera");
+			ImGui::Checkbox("Orbit", &orbitting);
+			if (orbitting)
+			{
+				cam.position.x = cosf((float) glfwGetTime()) * 5.0;
+				cam.position.z = sinf((float) glfwGetTime()) * 5.0;
+				funny = false;
+			}
+			else
+			{
+				ImGui::Checkbox("Funny", &funny);
+				if (funny)
+				{
+					cam.position.x = cosf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
+					cam.position.z = sinf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
+					ImGui::Checkbox("More funny", &funny2);
+					if (funny2)
+						cam.position.y = sinf((float)glfwGetTime() * 25) * 5.0;
+				}
+				else
+					funny2 = false;
+			}
 			ImGui::DragFloat3("Position", &cam.position.x, 0.05f);
 			ImGui::DragFloat3("Target", &cam.target.x, 0.05f);
 			ImGui::Checkbox("Orthographic", &cam.orthographic);
 			if (cam.orthographic)
-				ImGui::DragFloat("Ortho Height", &cam.orthoSize, 0.0f);
+				ImGui::DragFloat("Ortho Height", &cam.orthoSize, 0.05f);
 			else
-				ImGui::SliderFloat("fov", &cam.orthoSize, 0, 180);
+				ImGui::SliderFloat("fov", &cam.fov, 0, 180);
 			ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.0f);
 			ImGui::DragFloat("Far Plane", &cam.farPlane, 0.0f);
 			
@@ -133,5 +157,6 @@ int main() {
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	cam.aspectRatio = (float) width / (float) height;
 }
 

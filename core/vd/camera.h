@@ -9,10 +9,10 @@ namespace vd {
 		ew::Vec3 position = ew::Vec3(0, 0, 5); //Camera body position
 		ew::Vec3 target = ew::Vec3(0, 0, 0); //Position to look at
 		float fov = 60; //Vertical field of view in degrees
-		float aspectRatio; //Screen width / Screen height
+		float aspectRatio = 1080.0 / 720.0; //Screen width / Screen height
 		float nearPlane = 0.1; //Near plane distance (+Z)
 		float farPlane = 100; //Far plane distance (+Z)
-		bool orthographic = true; //Perspective or orthographic?
+		bool orthographic = false; //Perspective or orthographic?
 		float orthoSize = 6; //Height of orthographic frustum
 		ew::Mat4 ViewMatrix()
 		{
@@ -20,10 +20,10 @@ namespace vd {
 			//World->View
 		}
 		ew::Mat4 ProjectionMatrix()
-		{ 
+		{
 			return (orthographic ?
 				ew::Orthographic(orthoSize, aspectRatio, nearPlane, farPlane) :
-				ew::Perspective(fov, aspectRatio, nearPlane, farPlane));
+				ew::Perspective(ew::Radians(fov), aspectRatio, nearPlane, farPlane));
 			//View->Clip
 		}
 	};

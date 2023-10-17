@@ -74,16 +74,16 @@ namespace ew {
 		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));
 		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));
 		return Mat4(
-			r.x, r.y, r.z, 0,
-			u.x, u.y, u.z, 0,
-			f.x, f.y, f.z, 0,
+			r.x, r.y, r.z, -ew::Dot(r, eye),
+			u.x, u.y, u.z, -ew::Dot(u, eye),
+			f.x, f.y, f.z, -ew::Dot(f, eye),
 			0.0f, 0.0f, 0.0f, 1.0f
 		);
 			//use ew::Cross for cross product!
 	};
 	//Orthographic projection
 	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
-		float r = height * aspect / 2.0f;
+		float r = (height * aspect) / 2.0f;
 		float t = height / 2.0f;
 		float l = r * -1;
 		float b = t * -1;
@@ -105,5 +105,4 @@ namespace ew {
 			0, 0, -1, 0
 		);
 	};
-
 }

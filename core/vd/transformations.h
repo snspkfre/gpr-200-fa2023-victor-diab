@@ -2,6 +2,7 @@
 #pragma once
 #include "../ew/ewMath/mat4.h"
 #include "../ew/ewMath/vec3.h"
+#include "../ew/ewMath/ewMath.h"
 
 namespace vd {
 	//Identity matrix
@@ -24,7 +25,6 @@ namespace vd {
 	};
 	//Rotation around X axis (pitch) in radians
 	inline ew::Mat4 RotateX(float rad) {
-		rad = rad * ew::DEG2RAD;
 		return ew::Mat4(
 			1, 0, 0, 0,
 			0, cos(rad), -sin(rad), 0,
@@ -34,7 +34,6 @@ namespace vd {
 	};
 	//Rotation around Y axis (yaw) in radians
 	inline ew::Mat4 RotateY(float rad) {
-		rad = rad * ew::DEG2RAD;
 		return ew::Mat4(
 			cos(rad) , 0, sin(rad), 0,
 			0        , 1, 0       , 0,
@@ -44,7 +43,6 @@ namespace vd {
 	};
 	//Rotation around Z axis (roll) in radians
 	inline ew::Mat4 RotateZ(float rad) {
-		rad = rad * ew::DEG2RAD;
 		return ew::Mat4(
 			cos(rad), -sin(rad), 0, 0,
 			sin(rad), cos(rad), 0, 0,
@@ -64,17 +62,14 @@ namespace vd {
 
 	struct Transform {
 		ew::Vec3 position = ew::Vec3(0.0f, 0.0f, 0.0f);
-		ew::Vec3 rotation = ew::Vec3(5.0f, 0.0f, 0.0f); //Euler angles (degrees)
+		ew::Vec3 rotation = ew::Vec3(0.0f, 0.0f, 0.0f); //Euler angles (degrees)
 		ew::Vec3 scale = ew::Vec3(1.0f, 1.0f, 1.0f);
 		ew::Mat4 getModelMatrix() const {
-			ew::Mat4 mat = Identity();
-			ew::Mat4 sc = Scale(scale);
-			ew::Mat4 rot = RotateZ(rotation.z); 
-			rot = rot * RotateX(rotation.x);
-			rot = rot * RotateY(rotation.y);
-			ew::Mat4 trans = Translate(position);
-			//return Identity();
-			return trans * rot * sc;
+			return vd::Translate(position)
+				* RotateY(ew::Radians(rotation.y))
+				* RotateX(ew::Radians(rotation.x))
+				* RotateZ(ew::Radians(rotation.z))
+				* vd::Scale(scale);
 		}
 	};
 }
