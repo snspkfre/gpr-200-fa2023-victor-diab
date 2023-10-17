@@ -15,6 +15,7 @@
 #include <vd/transformations.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls);
 
 //Projection will account for aspect ratio!
 const int SCREEN_WIDTH = 1080;
@@ -23,8 +24,9 @@ const int SCREEN_HEIGHT = 720;
 const int NUM_CUBES = 4;
 vd::Transform cubeTransforms[NUM_CUBES];
 vd::Camera cam;
+vd::CameraControls camControls;
 
-bool orbitting = true;
+bool orbitting = false;
 bool funny = false;
 bool funny2 = false;
 
@@ -78,6 +80,8 @@ int main() {
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		moveCamera(window, &cam, &camControls);
+
 		//Set uniforms
 		shader.use();
 		shader.setMat4("_View", cam.ViewMatrix());
@@ -115,9 +119,13 @@ int main() {
 					ImGui::Checkbox("More funny", &funny2);
 					if (funny2)
 						cam.position.y = sinf((float)glfwGetTime() * 25) * 5.0;
+					else
+						cam.position.y = 0;
 				}
 				else
+				{
 					funny2 = false;
+				}
 			}
 			ImGui::DragFloat3("Position", &cam.position.x, 0.05f);
 			ImGui::DragFloat3("Target", &cam.target.x, 0.05f);
@@ -126,8 +134,8 @@ int main() {
 				ImGui::DragFloat("Ortho Height", &cam.orthoSize, 0.05f);
 			else
 				ImGui::SliderFloat("fov", &cam.fov, 0, 180);
-			ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.0f);
-			ImGui::DragFloat("Far Plane", &cam.farPlane, 0.0f);
+			ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.05f);
+			ImGui::DragFloat("Far Plane", &cam.farPlane, 0.05f);
 			
 			/*ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
@@ -160,3 +168,75 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 	cam.aspectRatio = (float) width / (float) height;
 }
 
+void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls)
+{
+	//If right mouse is not held, release cursor and return early.
+	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+		//Release cursor
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		controls->firstMouse = true;
+		return;
+	}
+	//GLFW_CURSOR_DISABLED hides the cursor, but the position will still be changed as we move our mouse.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	//Get screen mouse position this frame
+	double mouseX, mouseY;
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+
+	//If we just started right clicking, set prevMouse values to current position.
+	//This prevents a bug where the camera moves as soon as we click.
+	if (controls->firstMouse) {
+		controls->firstMouse = false;
+		controls->prevMouseX = mouseX;
+		controls->prevMouseY = mouseY;
+	}
+
+	//TODO: Get mouse position delta for this frame
+	ew::Vec2 mousePosDelta = ew::Vec2(mouseX - controls->prevMouseX, mouseY - controls->prevMouseY);
+	//TODO: Add to yaw and pitch
+	controls->yaw += mousePosDelta.x;
+	controls->pitch -= mousePosDelta.y;
+	//TODO: Clamp pitch between -89 and 89 degrees
+	if (controls->pitch >= 89)
+		controls->pitch = 89;
+	else if(controls->pitch <= -89)
+		controls->pitch = -89;
+	
+	//Remember previous mouse position
+	controls->prevMouseX = mouseX;
+	controls->prevMouseY = mouseY;
+
+	ew::Vec3 forward = ew::Vec3(cosf(ew::Radians(controls->yaw - 90))*cosf(ew::Radians(controls->pitch)), sinf(ew::Radians(controls->pitch)), sinf(ew::Radians(controls->yaw - 90)) * cosf(ew::Radians(controls->pitch)));
+		//By setting target to a point in front of the camera along its forward direction, our LookAt will be updated accordingly when rendering.
+	//camera->target = camera->position + forward;
+
+	//TODO: Using camera forward and world up (0,1,0), construct camera right and up vectors. Graham-schmidt process!
+	ew::Vec3 right = ew::Normalize(ew::Cross(ew::Vec3(0,1,0), forward));
+	ew::Vec3 up = ew::Normalize(ew::Cross(forward, right));
+	//TODO: Keyboard controls for moving along forward, back, right, left, up, and down. See Requirements for key mappings.
+	if (glfwGetKey(window, GLFW_KEY_D) && !glfwGetKey(window, GLFW_KEY_A)) {
+		camera->position -= right * controls->moveSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) && !glfwGetKey(window, GLFW_KEY_D)) {
+		camera->position += right * controls->moveSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) && !glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+		camera->position += up * controls->moveSpeed;
+	}
+	if (!glfwGetKey(window, GLFW_KEY_SPACE) && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+		camera->position -= up * controls->moveSpeed;
+	}
+	//EXAMPLE: Moving along forward axis if W is held.
+	//Note that this is framerate dependent, and will be very fast until you scale by deltaTime. See the next section.
+	if (glfwGetKey(window, GLFW_KEY_W) && !glfwGetKey(window, GLFW_KEY_S)) {
+		camera->position += forward * controls->moveSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) && !glfwGetKey(window, GLFW_KEY_W)) {
+		camera->position -= forward * controls->moveSpeed;
+	}
+	//Setting camera.target should be done after changing position. Otherwise, it will use camera.position from the previous frame and lag behind
+	camera->target = camera->position + forward;
+
+}
