@@ -15,7 +15,7 @@
 #include <vd/transformations.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls);
+void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls, float deltaTime);
 
 //Projection will account for aspect ratio!
 const int SCREEN_WIDTH = 1080;
@@ -73,14 +73,17 @@ int main() {
 		cubeTransforms[i].position.x = i % (NUM_CUBES / 2) - 0.5;
 		cubeTransforms[i].position.y = i / (NUM_CUBES / 2) - 0.5;
 	}
-
+	float prevTime = 0; //Timestamp of previous frame
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		float time = (float)glfwGetTime(); //Timestamp of current frame
+		float deltaTime = time - prevTime;
+		prevTime = time;
 
-		moveCamera(window, &cam, &camControls);
+		moveCamera(window, &cam, &camControls, deltaTime);
 
 		//Set uniforms
 		shader.use();
@@ -136,6 +139,18 @@ int main() {
 				ImGui::SliderFloat("fov", &cam.fov, 0, 180);
 			ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.05f);
 			ImGui::DragFloat("Far Plane", &cam.farPlane, 0.05f);
+			if (ImGui::Button("Reset"))
+			{
+				camControls.yaw = 0, camControls.pitch = 0; //Degrees
+				cam.position = ew::Vec3(0, 0, 5); //Camera body position
+				cam.target = ew::Vec3(0, 0, 0); //Position to look at
+				cam.fov = 60; //Vertical field of view in degrees
+				cam.aspectRatio = 1080.0 / 720.0; //Screen width / Screen height
+				cam.nearPlane = 0.1; //Near plane distance (+Z)
+				cam.farPlane = 100; //Far plane distance (+Z)
+				cam.orthographic = false; //Perspective or orthographic?
+				cam.orthoSize = 6; //Height of orthographic frustum
+			}
 			
 			/*ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
@@ -168,7 +183,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 	cam.aspectRatio = (float) width / (float) height;
 }
 
-void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls)
+void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* controls, float deltaTime)
 {
 	//If right mouse is not held, release cursor and return early.
 	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
@@ -216,25 +231,25 @@ void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* cont
 	ew::Vec3 up = ew::Normalize(ew::Cross(forward, right));
 	//TODO: Keyboard controls for moving along forward, back, right, left, up, and down. See Requirements for key mappings.
 	if (glfwGetKey(window, GLFW_KEY_D) && !glfwGetKey(window, GLFW_KEY_A)) {
-		camera->position -= right * controls->moveSpeed;
+		camera->position -= right * controls->moveSpeed * deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) && !glfwGetKey(window, GLFW_KEY_D)) {
-		camera->position += right * controls->moveSpeed;
+		camera->position += right * controls->moveSpeed * deltaTime;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) && !glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
-		camera->position += up * controls->moveSpeed;
+		camera->position += up * controls->moveSpeed * deltaTime;
 	}
 	if (!glfwGetKey(window, GLFW_KEY_SPACE) && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
-		camera->position -= up * controls->moveSpeed;
+		camera->position -= up * controls->moveSpeed * deltaTime;
 	}
 	//EXAMPLE: Moving along forward axis if W is held.
 	//Note that this is framerate dependent, and will be very fast until you scale by deltaTime. See the next section.
 	if (glfwGetKey(window, GLFW_KEY_W) && !glfwGetKey(window, GLFW_KEY_S)) {
-		camera->position += forward * controls->moveSpeed;
+		camera->position += forward * controls->moveSpeed * deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) && !glfwGetKey(window, GLFW_KEY_W)) {
-		camera->position -= forward * controls->moveSpeed;
+		camera->position -= forward * controls->moveSpeed * deltaTime;
 	}
 	//Setting camera.target should be done after changing position. Otherwise, it will use camera.position from the previous frame and lag behind
 	camera->target = camera->position + forward;
