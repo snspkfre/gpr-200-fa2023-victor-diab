@@ -29,6 +29,9 @@ vd::CameraControls camControls;
 bool orbitting = false;
 bool funny = false;
 bool funny2 = false;
+float sprintMultiplier = 2.0;
+float mouseSensCam = 1.0;
+float mouseSensMove = 1.0;
 
 int main() {
 	printf("Initializing...");
@@ -105,41 +108,57 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Text("Camera");
-			ImGui::Checkbox("Orbit", &orbitting);
-			if (orbitting)
+			if (ImGui::CollapsingHeader("Camera Controller settings."))
 			{
-				cam.position.x = cosf((float) glfwGetTime()) * 5.0;
-				cam.position.z = sinf((float) glfwGetTime()) * 5.0;
-				funny = false;
-			}
-			else
-			{
-				ImGui::Checkbox("Funny", &funny);
-				if (funny)
+				ImGui::SliderFloat("Move Speed", &camControls.moveSpeed, 1.0, 10.0);
+				ImGui::SliderFloat("Sprint Multiplier", &sprintMultiplier, 1.0, 5.0);
+				ImGui::SliderFloat("Mouse sensitivity (Aim)", &mouseSensCam, 0.1, 2.0);
+				ImGui::SliderFloat("Mouse sensitivity (Movement)", &mouseSensMove, 0.1, 2.0);
+				if (ImGui::Button("Reset Control Values"))
 				{
-					cam.position.x = cosf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
-					cam.position.z = sinf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
-					ImGui::Checkbox("More funny", &funny2);
-					if (funny2)
-						cam.position.y = sinf((float)glfwGetTime() * 25) * 5.0;
-					else
-						cam.position.y = 0;
+					camControls.moveSpeed = 5.0f;
+					sprintMultiplier = 2.0f;
+					mouseSensCam = 1.0f;
+					mouseSensMove = 1.0f;
+				}
+			}
+			if (ImGui::CollapsingHeader("Camera ImGui settings.")) {
+				ImGui::Checkbox("Orbit", &orbitting);
+				if (orbitting)
+				{
+					cam.position.x = cosf((float)glfwGetTime()) * 5.0;
+					cam.position.z = sinf((float)glfwGetTime()) * 5.0;
+					funny = false;
 				}
 				else
 				{
-					funny2 = false;
-				}
+					ImGui::Checkbox("Funny", &funny);
+					if (funny)
+					{
+						cam.position.x = cosf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
+						cam.position.z = sinf((float)glfwGetTime()) * 5.0 * sinf((float)glfwGetTime() * 5.0);
+						ImGui::Checkbox("More funny", &funny2);
+						if (funny2)
+							cam.position.y = sinf((float)glfwGetTime() * 25) * 5.0;
+						else
+							cam.position.y = 0;
+					}
+					else
+					{
+						funny2 = false;
+					}
+				};
+				ImGui::DragFloat3("Position", &cam.position.x, 0.05f);
+				ImGui::DragFloat3("Target", &cam.target.x, 0.05f);
+				ImGui::Checkbox("Orthographic", &cam.orthographic);
+				if (cam.orthographic)
+					ImGui::DragFloat("Ortho Height", &cam.orthoSize, 0.05f);
+				else
+					ImGui::SliderFloat("fov", &cam.fov, 0, 180);
+				ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.05f);
+				ImGui::DragFloat("Far Plane", &cam.farPlane, 0.05f);
 			}
-			ImGui::DragFloat3("Position", &cam.position.x, 0.05f);
-			ImGui::DragFloat3("Target", &cam.target.x, 0.05f);
-			ImGui::Checkbox("Orthographic", &cam.orthographic);
-			if (cam.orthographic)
-				ImGui::DragFloat("Ortho Height", &cam.orthoSize, 0.05f);
-			else
-				ImGui::SliderFloat("fov", &cam.fov, 0, 180);
-			ImGui::DragFloat("Near Plane", &cam.nearPlane, 0.05f);
-			ImGui::DragFloat("Far Plane", &cam.farPlane, 0.05f);
-			if (ImGui::Button("Reset"))
+			if (ImGui::Button("Reset Camera"))
 			{
 				camControls.yaw = 0, camControls.pitch = 0; //Degrees
 				cam.position = ew::Vec3(0, 0, 5); //Camera body position
@@ -210,8 +229,9 @@ void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* cont
 	//TODO: Get mouse position delta for this frame
 	ew::Vec2 mousePosDelta = ew::Vec2(mouseX - controls->prevMouseX, mouseY - controls->prevMouseY);
 	//TODO: Add to yaw and pitch
-	controls->yaw += mousePosDelta.x;
-	controls->pitch -= mousePosDelta.y;
+	controls->yaw += mousePosDelta.x * mouseSensCam;
+	if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+		controls->pitch -= mousePosDelta.y * mouseSensCam;
 	//TODO: Clamp pitch between -89 and 89 degrees
 	if (controls->pitch >= 89)
 		controls->pitch = 89;
@@ -230,27 +250,38 @@ void moveCamera(GLFWwindow* window, vd::Camera* camera, vd::CameraControls* cont
 	ew::Vec3 right = ew::Normalize(ew::Cross(ew::Vec3(0,1,0), forward));
 	ew::Vec3 up = ew::Normalize(ew::Cross(forward, right));
 	//TODO: Keyboard controls for moving along forward, back, right, left, up, and down. See Requirements for key mappings.
-	if (glfwGetKey(window, GLFW_KEY_D) && !glfwGetKey(window, GLFW_KEY_A)) {
-		camera->position -= right * controls->moveSpeed * deltaTime;
+	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+	{
+		float funcMoveSpeed = controls->moveSpeed;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT))
+			funcMoveSpeed *= sprintMultiplier;
+		if (glfwGetKey(window, GLFW_KEY_D) && !glfwGetKey(window, GLFW_KEY_A)) {
+			camera->position -= right * funcMoveSpeed * deltaTime;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) && !glfwGetKey(window, GLFW_KEY_D)) {
+			camera->position += right * funcMoveSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_SPACE) && !glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+			camera->position += up * funcMoveSpeed * deltaTime;
+		}
+		if (!glfwGetKey(window, GLFW_KEY_SPACE) && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+			camera->position -= up * funcMoveSpeed * deltaTime;
+		}
+		//EXAMPLE: Moving along forward axis if W is held.
+		//Note that this is framerate dependent, and will be very fast until you scale by deltaTime. See the next section.
+		if (glfwGetKey(window, GLFW_KEY_W) && !glfwGetKey(window, GLFW_KEY_S)) {
+			camera->position += forward * funcMoveSpeed * deltaTime;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) && !glfwGetKey(window, GLFW_KEY_W)) {
+			camera->position -= forward * funcMoveSpeed * deltaTime;
+		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_A) && !glfwGetKey(window, GLFW_KEY_D)) {
-		camera->position += right * controls->moveSpeed * deltaTime;
+	else
+	{
+		camera->position -= forward * mousePosDelta.y * mouseSensMove / 3;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_SPACE) && !glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
-		camera->position += up * controls->moveSpeed * deltaTime;
-	}
-	if (!glfwGetKey(window, GLFW_KEY_SPACE) && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
-		camera->position -= up * controls->moveSpeed * deltaTime;
-	}
-	//EXAMPLE: Moving along forward axis if W is held.
-	//Note that this is framerate dependent, and will be very fast until you scale by deltaTime. See the next section.
-	if (glfwGetKey(window, GLFW_KEY_W) && !glfwGetKey(window, GLFW_KEY_S)) {
-		camera->position += forward * controls->moveSpeed * deltaTime;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) && !glfwGetKey(window, GLFW_KEY_W)) {
-		camera->position -= forward * controls->moveSpeed * deltaTime;
-	}
 	//Setting camera.target should be done after changing position. Otherwise, it will use camera.position from the previous frame and lag behind
 	camera->target = camera->position + forward;
 
