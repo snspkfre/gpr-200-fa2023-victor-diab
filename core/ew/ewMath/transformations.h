@@ -5,7 +5,6 @@
 #pragma once
 #include "mat4.h"
 #include "vec3.h"
-#include "ewMath.h"
 
 namespace ew {
 	//Identity matrix
@@ -69,40 +68,44 @@ namespace ew {
 		);
 	};
 
-	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
-		ew::Vec3 f = ew::Normalize(eye - target);
+	inline ew::Mat4 LookAt(const ew::Vec3& eyePos, const ew::Vec3& targetPos, const ew::Vec3& up) {
+		ew::Vec3 f = ew::Normalize(eyePos - targetPos);
 		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));
-		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));
-		return Mat4(
-			r.x, r.y, r.z, -ew::Dot(r, eye),
-			u.x, u.y, u.z, -ew::Dot(u, eye),
-			f.x, f.y, f.z, -ew::Dot(f, eye),
-			0.0f, 0.0f, 0.0f, 1.0f
-		);
-			//use ew::Cross for cross product!
-	};
-	//Orthographic projection
-	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
-		float r = (height * aspect) / 2.0f;
-		float t = height / 2.0f;
-		float l = r * -1;
-		float b = t * -1;
+		ew::Vec3 u = ew::Normalize(ew::Cross(f,r));
+		ew::Mat4 m = ew::Mat4(
+			r.x, r.y, r.z, -ew::Dot(r, eyePos),
+			u.x, u.y, u.z, -ew::Dot(u, eyePos),
+			f.x, f.y, f.z, -ew::Dot(f, eyePos),
+			0.0, 0.0, 0.0, 1.0);
+		return m;
+	}
 
-		return Mat4(
-			2/(r-l), 0.0f, 0.0f, -(r+l)/(r-l),
-			0.0f, 2/(t-b), 0.0f, -(t + b) /( t - b),
-			0.0f, 0.0f, -2/(far-near), -(far + near)/(far - near),
-			0.0f, 0.0f, 0.0f, 1.0f
-		);
-	};
-	//Perspective projection
-	//fov = vertical aspect ratio (radians)
-	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
-		return ew::Mat4(
-			1/(tanf(fov/2)*aspect), 0, 0, 0,
-			0, 1/(tanf(fov/2)), 0, 0,
-			0, 0, (near+far)/(near-far), (2*far*near)/(near-far),
-			0, 0, -1, 0
-		);
-	};
+	inline ew::Mat4 Perspective(float fov, float a, float n, float f) {
+		float c = tanf(fov / 2.0f);
+		Mat4 m = Mat4(0);
+		m[0][0] = 1.0f / (c * a); //Scale X
+		m[1][1] = 1.0f / c; //Scale Y
+		m[2][2] = (f + n) / (n-f); //Scale Z
+		m[3][2] = (2 * f * n) / (n-f); //Translate Z
+		m[2][3] = -1.0f; //Perspective divide (puts Z in W component of vector)
+		return m;
+	}
+
+	inline ew::Mat4 Orthographic(float height, float a, float n, float f) {
+		//Symmetrical bounds based on aspect ratio
+		float t = height / 2;
+		float b = -t;
+		float r = (height * a) / 2;
+		float l = -r;
+
+		Mat4 m = Mat4(0);
+		m[0][0] = 2 / (r - l);
+		m[1][1] = 2 / (t - b);
+		m[2][2] = -2 / (f - n);
+		m[3][0] = -(r + l) / (r - l);
+		m[3][1] = -(t + b) / (t - b);
+		m[3][2] = -(f + n) / (f - n);
+		m[3][3] = 1.0f;
+		return m;
+	}
 }
