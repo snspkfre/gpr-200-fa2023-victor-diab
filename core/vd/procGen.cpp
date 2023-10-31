@@ -19,8 +19,8 @@ namespace vd{
 		for (int i = 0; i < 2; i++)
 		{
 			ew::Vertex center;
-			center.pos = ew::Vec3(0, height * (i - 0.5), 0);
-			center.normal = ew::Vec3(0, -1 + i * 2, 0);
+			center.pos = ew::Vec3(0, height * (i - 0.5) * -1, 0);
+			center.normal = ew::Vec3(0, 1 - i * 2, 0);
 			center.uv = ew::Vec2(0.5, 0.5);
 			cylinderMesh.vertices.push_back(center);
 		}
@@ -31,28 +31,28 @@ namespace vd{
 			{
 				ew::Vertex temp;
 				temp.pos.x = sin(theta) * radius;
-				temp.pos.y = height * (i - 0.5);
+				temp.pos.y = height * (i - 0.5) * -1;
 				temp.pos.z = cos(theta) * radius;
-				temp.uv.x = sin(theta);
-				temp.uv.y = cos(theta);
+				temp.uv.x = temp.pos.x / radius;
+				temp.uv.y = temp.pos.z / radius;
 				theta += step;
-				temp.normal = ew::Vec3(0, -1 + i * 2, 0);
+				temp.normal = ew::Vec3(0, 1 - i * 2, 0);
 				cylinderMesh.vertices.push_back(temp);
 			}
 		}
 		for (int i = 0; i < 2; i++)
 		{
-			float theta = 0;
+			float theta = -0;
 			for (int j = 0; j < numSegments; j++)
 			{
 				ew::Vertex temp;
 				temp.pos.x = sin(theta) * radius;
-				temp.pos.y = height * (i - 0.5);
+				temp.pos.y = height * (i - 0.5) * -1;
 				temp.pos.z = cos(theta) * radius;
 				temp.uv.x = (float)j / (float)numSegments;
-				temp.uv.y = i * 2 - 1;
+				temp.uv.y = i;
 				theta += step;
-				temp.normal = ew::Vec3(sin(theta), 0, cos(theta));
+				temp.normal = ew::Vec3(cos(theta), 0, sin(theta));
 				cylinderMesh.vertices.push_back(temp);
 			}
 		}
@@ -62,12 +62,12 @@ namespace vd{
 
 		for (int i = 0; i < numSegments - 1; i++)
 		{
-			cylinderMesh.indices.push_back(start + i);
 			cylinderMesh.indices.push_back(center);
+			cylinderMesh.indices.push_back(start + i);
 			cylinderMesh.indices.push_back(start + i + 1);
 		}
+		cylinderMesh.indices.push_back(center); 
 		cylinderMesh.indices.push_back(start + numSegments - 1);
-		cylinderMesh.indices.push_back(center);
 		cylinderMesh.indices.push_back(start);
 		
 		start += numSegments;
@@ -75,12 +75,12 @@ namespace vd{
 		
 		for (int i = 0; i < numSegments - 1; i++)
 		{
-			cylinderMesh.indices.push_back(center);
 			cylinderMesh.indices.push_back(start + i);
+			cylinderMesh.indices.push_back(center);
 			cylinderMesh.indices.push_back(start + i + 1);
 		}
-		cylinderMesh.indices.push_back(center);
 		cylinderMesh.indices.push_back(start + numSegments - 1);
+		cylinderMesh.indices.push_back(center);
 		cylinderMesh.indices.push_back(start);
 		
 		
@@ -90,23 +90,24 @@ namespace vd{
 		{
 			int start = i + sideStart;
 
-			cylinderMesh.indices.push_back(start);
 			cylinderMesh.indices.push_back(start + 1);
+			cylinderMesh.indices.push_back(start);
 			cylinderMesh.indices.push_back(start + numCol);
 		
 
-			cylinderMesh.indices.push_back(start + numCol);
 			cylinderMesh.indices.push_back(start + numCol - 1);
+			cylinderMesh.indices.push_back(start + numCol);
 			cylinderMesh.indices.push_back(start);
 		}
 
-		cylinderMesh.indices.push_back(sideStart + numCol - 2);
+
 		cylinderMesh.indices.push_back(sideStart);
+		cylinderMesh.indices.push_back(sideStart + numCol - 2);
 		cylinderMesh.indices.push_back(sideStart + numCol - 1);
 		
 
-		cylinderMesh.indices.push_back(sideStart + numCol - 1);
 		cylinderMesh.indices.push_back(sideStart + numCol - 2 + numCol - 1);
+		cylinderMesh.indices.push_back(sideStart + numCol - 1);
 		cylinderMesh.indices.push_back(sideStart + numCol - 2);
 		
 		return cylinderMesh;
