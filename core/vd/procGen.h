@@ -3,7 +3,7 @@
 #include "../ew/mesh.h"
 #include <vector>
 namespace vd {
-	//ew::MeshData createSphere(float radius, int numSegments);
+	ew::MeshData createSphere(float radius, int numSegments);
 	ew::MeshData createCylinder(float height, float radius, int numSegments);
 	ew::MeshData createPlane(float width, float height, int subdivisions);
 }

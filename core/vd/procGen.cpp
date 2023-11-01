@@ -3,13 +3,29 @@
 #include "../ew/mesh.h"
 
 namespace vd{
-	/*ew::MeshData createSphere(float radius, int numSegments)
+	ew::MeshData createSphere(float radius, int numSegments)
 	{
-		for (int i = 0; i < numSegments; i++)
-		{
+		ew::MeshData sphereMesh;
 
+		float thetaStep = 2 * 3.14159265 / numSegments;
+		float phiStep = 3.14159265 / numSegments;
+
+		for (int i = 0; i <= numSegments; i++)
+		{
+			float phi = i * phiStep;
+			for (int j = 0; j <= numSegments; j++)
+			{
+				float theta = j * thetaStep;
+				ew::Vertex temp;
+				temp.pos.x = radius * cos(theta) * sin(phi);
+				temp.pos.y = radius * cos(phi);
+				temp.pos.z = radius * sin(theta) * sin(phi);
+				sphereMesh.vertices.push_back(temp);
+			}
 		}
-	}*/
+
+		return sphereMesh;
+	}
 
 	ew::MeshData createCylinder(float height, float radius, int numSegments)
 	{

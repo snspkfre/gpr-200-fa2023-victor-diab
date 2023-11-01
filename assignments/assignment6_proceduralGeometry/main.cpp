@@ -86,6 +86,8 @@ int main() {
 	ew::Mesh planeMesh(planeMeshData);
 	ew::MeshData cylinderMeshData = vd::createCylinder(0.5, 0.25, 10);
 	ew::Mesh cylinderMesh(cylinderMeshData);
+	ew::MeshData sphereMeshData = vd::createSphere(0.5, 10);
+	ew::Mesh sphereMesh(sphereMeshData);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
@@ -96,6 +98,8 @@ int main() {
 	planeTransform.position.z -= 0.25;
 	ew::Transform cylinderTransform;
 	cylinderTransform.position.x += 0.5;
+	ew::Transform sphereTransform;
+	sphereTransform.position.x += 1.5;
 
 	resetCamera(camera,cameraController);
 
@@ -136,6 +140,8 @@ int main() {
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
 		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		//Render UI
 		{
