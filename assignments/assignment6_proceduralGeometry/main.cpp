@@ -79,14 +79,18 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
+	int sphereSegments = 10;
+	int cylinderSegments = 10;
+	int planeSegments = 5;
+
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
-	ew::MeshData planeMeshData = vd::createPlane(0.5, 0.5, 5);
+	ew::MeshData planeMeshData = vd::createPlane(0.5, 0.5, planeSegments);
 	ew::Mesh planeMesh(planeMeshData);
-	ew::MeshData cylinderMeshData = vd::createCylinder(0.5, 0.25, 10);
+	ew::MeshData cylinderMeshData = vd::createCylinder(0.5, 0.25, cylinderSegments);
 	ew::Mesh cylinderMesh(cylinderMeshData);
-	ew::MeshData sphereMeshData = vd::createSphere(0.5, 10);
+	ew::MeshData sphereMeshData = vd::createSphere(0.5, sphereSegments);
 	ew::Mesh sphereMesh(sphereMeshData);
 
 	//Initialize transforms
@@ -136,13 +140,13 @@ int main() {
 		//Draw cube
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		/*shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
 		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-
+		*/
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -185,11 +189,33 @@ int main() {
 				else
 					glDisable(GL_CULL_FACE);
 			}
+			if (ImGui::CollapsingHeader("Bonus - Dynamic")) 
+			{
+				ImGui::DragInt("Sphere Segments", &sphereSegments, 1.0f, 3, 100000);
+				ImGui::DragInt("Cylinder Segments", &cylinderSegments, 1.0f, 3, 10000);
+				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 10000);
+			}
+
 			ImGui::End();
 			
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
+
+		planeMeshData = vd::createPlane(0.5, 0.5, planeSegments);
+		cylinderMeshData = vd::createCylinder(0.5, 0.25, cylinderSegments);
+		sphereMeshData = vd::createSphere(0.5, sphereSegments);
+		
+		ew::Mesh planeMesh(planeMeshData);
+		ew::Mesh cylinderMesh(cylinderMeshData);
+		ew::Mesh sphereMesh(sphereMeshData);
+		
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		glfwSwapBuffers(window);
 	}

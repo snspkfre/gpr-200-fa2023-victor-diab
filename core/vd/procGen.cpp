@@ -20,8 +20,49 @@ namespace vd{
 				temp.pos.x = radius * cos(theta) * sin(phi);
 				temp.pos.y = radius * cos(phi);
 				temp.pos.z = radius * sin(theta) * sin(phi);
+				temp.normal = ew::Normalize(temp.pos);
+				temp.uv.x = (float)j / (float)numSegments;
+				temp.uv.y = (float)i / (float)numSegments;
 				sphereMesh.vertices.push_back(temp);
 			}
+		}
+
+		int poleStart = 0;
+		int sideStart = numSegments + 1;
+
+		for (int i = 0; i < numSegments; i++)
+		{
+			sphereMesh.indices.push_back(sideStart + i);
+			sphereMesh.indices.push_back(poleStart + i);
+			sphereMesh.indices.push_back(sideStart + i + 1);
+		}
+
+		int columns = numSegments + 1;
+		for (int i = 1; i < numSegments - 1; i++)
+		{
+			for (int j = 0; j < numSegments; j++)
+			{
+				int start = i * columns + j;
+				
+				sphereMesh.indices.push_back(start);
+				sphereMesh.indices.push_back(start + 1);
+				sphereMesh.indices.push_back(start + columns + 1);
+				
+				sphereMesh.indices.push_back(start + columns);
+				sphereMesh.indices.push_back(start);
+				sphereMesh.indices.push_back(start + columns + 1);
+			}
+		}
+		
+		poleStart = (numSegments + 1) * numSegments;
+		sideStart = poleStart - numSegments - 1;
+
+		for (int i = 0; i < numSegments; i++)
+		{
+
+			sphereMesh.indices.push_back(poleStart + i);
+			sphereMesh.indices.push_back(sideStart + i);
+			sphereMesh.indices.push_back(sideStart + i + 1);
 		}
 
 		return sphereMesh;
