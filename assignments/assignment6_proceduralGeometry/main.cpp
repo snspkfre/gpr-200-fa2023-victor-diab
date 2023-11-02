@@ -83,14 +83,19 @@ int main() {
 	int cylinderSegments = 10;
 	int planeSegments = 5;
 
+	float wPlane = 0.5, hPlane = 0.5;
+	float hCylinder = 0.5, cRad = 0.25;
+	float sRad = 0.5;
+
+
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
-	ew::MeshData planeMeshData = vd::createPlane(0.5, 0.5, planeSegments);
+	ew::MeshData planeMeshData = vd::createPlane(wPlane, hPlane, planeSegments);
 	ew::Mesh planeMesh(planeMeshData);
-	ew::MeshData cylinderMeshData = vd::createCylinder(0.5, 0.25, cylinderSegments);
+	ew::MeshData cylinderMeshData = vd::createCylinder(hCylinder, cRad, cylinderSegments);
 	ew::Mesh cylinderMesh(cylinderMeshData);
-	ew::MeshData sphereMeshData = vd::createSphere(0.5, sphereSegments);
+	ew::MeshData sphereMeshData = vd::createSphere(sRad, sphereSegments);
 	ew::Mesh sphereMesh(sphereMeshData);
 
 	//Initialize transforms
@@ -191,9 +196,14 @@ int main() {
 			}
 			if (ImGui::CollapsingHeader("Bonus - Dynamic")) 
 			{
+				ImGui::DragFloat("Sphere Radius", &sRad, 0.3f, 0.1f, 100000);
 				ImGui::DragInt("Sphere Segments", &sphereSegments, 1.0f, 3, 100000);
+				ImGui::DragFloat("Cylinder Height", &hCylinder, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Cylinder Radius", &cRad, 0.3f, 0.1f, 100000);
 				ImGui::DragInt("Cylinder Segments", &cylinderSegments, 1.0f, 3, 10000);
-				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 10000);
+				ImGui::DragFloat("Plane Width", &wPlane, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Plane Height", &hPlane, 0.3f, 0.1f, 100000);
+				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 100000);
 			}
 
 			ImGui::End();
@@ -202,9 +212,9 @@ int main() {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
-		planeMeshData = vd::createPlane(0.5, 0.5, planeSegments);
-		cylinderMeshData = vd::createCylinder(0.5, 0.25, cylinderSegments);
-		sphereMeshData = vd::createSphere(0.5, sphereSegments);
+		planeMeshData = vd::createPlane(wPlane, hPlane, planeSegments);
+		cylinderMeshData = vd::createCylinder(hCylinder, cRad, cylinderSegments);
+		sphereMeshData = vd::createSphere(sRad, sphereSegments);
 		
 		ew::Mesh planeMesh(planeMeshData);
 		ew::Mesh cylinderMesh(cylinderMeshData);
