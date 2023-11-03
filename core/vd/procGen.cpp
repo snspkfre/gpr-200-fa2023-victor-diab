@@ -3,6 +3,52 @@
 #include "../ew/mesh.h"
 
 namespace vd{
+	ew::MeshData createTorus(float radius, float thickness, int numSegmentsOut, int numSegmentsIn)
+	{
+		ew::MeshData torusMesh;
+
+		float outStep = 2 * 3.14159265 / numSegmentsOut;
+		float inStep = 2 * 3.14159265 / numSegmentsIn;
+
+		for (int i = 0; i <= numSegmentsOut; i++)
+		{
+			float thetaOut = i * outStep;
+			ew::Vec3 outPos = ew::Vec3(cos(thetaOut), sin(thetaOut), 0) * radius;
+			for (int j = 0; j <= numSegmentsIn; j++)
+			{
+				float thetaIn = j * inStep;
+				ew::Vec3 inPos = ew::Vec3(cos(thetaIn) * cos(thetaOut), cos(thetaIn) * sin(thetaOut), sin(thetaIn)) * thickness;
+				ew::Vertex temp;
+				temp.pos = inPos + outPos;
+				temp.normal = ew::Normalize(inPos);
+				temp.uv.x = (float)j / (float)numSegmentsIn;
+				temp.uv.y = (float)i / (float)numSegmentsOut;
+				torusMesh.vertices.push_back(temp);
+			}
+		}
+
+
+		int columns = numSegmentsIn + 1;
+		
+		for (int i = 0; i < numSegmentsOut; i++)
+		{
+			for (int j = 0; j <= numSegmentsIn; j++)
+			{
+				int start = i * columns + j;
+				
+				torusMesh.indices.push_back(start + 1); 
+				torusMesh.indices.push_back(start);
+				torusMesh.indices.push_back(start + columns + 1);
+				
+				torusMesh.indices.push_back(start);
+				torusMesh.indices.push_back(start + columns);
+				torusMesh.indices.push_back(start + columns + 1);
+			}
+		}
+
+		return torusMesh;
+	}
+
 	ew::MeshData createSphere(float radius, int numSegments)
 	{
 		ew::MeshData sphereMesh;

@@ -87,6 +87,9 @@ int main() {
 	float hCylinder = 0.5, cRad = 0.25;
 	float sRad = 0.5;
 
+	float tRad = 0.5, tThick = 0.3;
+	int tSegmentsOut = 10, tSegmentsIn = 8;
+
 
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
@@ -97,6 +100,7 @@ int main() {
 	ew::Mesh cylinderMesh(cylinderMeshData);
 	ew::MeshData sphereMeshData = vd::createSphere(sRad, sphereSegments);
 	ew::Mesh sphereMesh(sphereMeshData);
+	ew::MeshData torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
@@ -109,6 +113,8 @@ int main() {
 	cylinderTransform.position.x += 0.5;
 	ew::Transform sphereTransform;
 	sphereTransform.position.x += 1.5;
+	ew::Transform torusTransform;
+	torusTransform.position.x += 3;
 
 	resetCamera(camera,cameraController);
 
@@ -152,6 +158,25 @@ int main() {
 		shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		*/
+
+		planeMeshData = vd::createPlane(wPlane, hPlane, planeSegments);
+		cylinderMeshData = vd::createCylinder(hCylinder, cRad, cylinderSegments);
+		sphereMeshData = vd::createSphere(sRad, sphereSegments);
+		torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
+		
+		ew::Mesh planeMesh(planeMeshData);
+		ew::Mesh cylinderMesh(cylinderMeshData);
+		ew::Mesh sphereMesh(sphereMeshData);
+		ew::Mesh torusMesh(torusMeshData);
+		
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", torusTransform.getModelMatrix());
+		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -204,6 +229,10 @@ int main() {
 				ImGui::DragFloat("Plane Width", &wPlane, 0.3f, 0.1f, 100000);
 				ImGui::DragFloat("Plane Height", &hPlane, 0.3f, 0.1f, 100000);
 				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 100000);
+				ImGui::DragFloat("Torus Radius", &tRad, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Torus Thickness", &tThick, 0.1f, 0.1f, 100000);
+				ImGui::DragInt("Torus Outer Segments", &tSegmentsOut, 1.0f, 3, 100000);
+				ImGui::DragInt("Torus Inner Segments", &tSegmentsIn, 1.0f, 3, 100000);
 			}
 
 			ImGui::End();
@@ -211,21 +240,6 @@ int main() {
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
-
-		planeMeshData = vd::createPlane(wPlane, hPlane, planeSegments);
-		cylinderMeshData = vd::createCylinder(hCylinder, cRad, cylinderSegments);
-		sphereMeshData = vd::createSphere(sRad, sphereSegments);
-		
-		ew::Mesh planeMesh(planeMeshData);
-		ew::Mesh cylinderMesh(cylinderMeshData);
-		ew::Mesh sphereMesh(sphereMeshData);
-		
-		shader.setMat4("_Model", planeTransform.getModelMatrix());
-		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-		shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		glfwSwapBuffers(window);
 	}
