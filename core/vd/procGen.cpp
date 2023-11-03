@@ -32,11 +32,11 @@ namespace vd{
 		
 		for (int i = 0; i < numSegmentsOut; i++)
 		{
-			for (int j = 0; j <= numSegmentsIn; j++)
+			for (int j = 0; j < numSegmentsIn; j++)
 			{
 				int start = i * columns + j;
 				
-				torusMesh.indices.push_back(start + 1); 
+				torusMesh.indices.push_back(start + 1);
 				torusMesh.indices.push_back(start);
 				torusMesh.indices.push_back(start + columns + 1);
 				
