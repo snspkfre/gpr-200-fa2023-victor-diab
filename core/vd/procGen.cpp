@@ -3,12 +3,51 @@
 #include "../ew/mesh.h"
 
 namespace vd{
+	ew::MeshData createMobius(float radius, float width, int numSegments)
+	{
+		ew::MeshData mobiusMesh;
+
+		float step1 = 2 * ew::PI / numSegments;
+		float step2 = step1 / 2;
+		float halfpi = ew::PI / 2;
+		for (int i = 0; i <= numSegments * 4; i++)
+		{
+			float theta1 = i * step1;
+			float theta2 = i * step2;
+
+			ew::Vertex temp;
+			ew::Vec3 outPos = ew::Vec3(cos(theta1), 0, sin(theta1)) * radius;
+			ew::Vec3 inPos = ew::Vec3(cos(theta1) * cos(theta2), sin(theta2), sin(theta1) * cos(theta2)) * width;
+			temp.pos = outPos + inPos;
+			temp.normal = ew::Normalize(ew::Vec3(cos(theta1) * cos(theta2 - halfpi), sin(theta2 - halfpi), sin(theta1) * cos(theta2 - halfpi)));
+			temp.uv.x = (float)i / numSegments;
+			temp.uv.y = 0;
+			mobiusMesh.vertices.push_back(temp);
+			temp.pos = outPos - inPos;
+			temp.uv.y = 1;
+			mobiusMesh.vertices.push_back(temp);
+		}
+
+		for (int i = 0; i < numSegments * 4; i += 2)
+		{
+
+			mobiusMesh.indices.push_back(i + 1);
+			mobiusMesh.indices.push_back(i);
+			mobiusMesh.indices.push_back(i + 2);
+
+			mobiusMesh.indices.push_back(i + 1);
+			mobiusMesh.indices.push_back(i + 2);
+			mobiusMesh.indices.push_back(i + 3);
+		}
+		return mobiusMesh;
+	}
+
 	ew::MeshData createTorus(float radius, float thickness, int numSegmentsOut, int numSegmentsIn)
 	{
 		ew::MeshData torusMesh;
 
-		float outStep = 2 * 3.14159265 / numSegmentsOut;
-		float inStep = 2 * 3.14159265 / numSegmentsIn;
+		float outStep = 2 * ew::PI / numSegmentsOut;
+		float inStep = 2 * ew::PI / numSegmentsIn;
 
 		for (int i = 0; i <= numSegmentsOut; i++)
 		{
@@ -53,8 +92,8 @@ namespace vd{
 	{
 		ew::MeshData sphereMesh;
 
-		float thetaStep = 2 * 3.14159265 / numSegments;
-		float phiStep = 3.14159265 / numSegments;
+		float thetaStep = 2 * ew::PI / numSegments;
+		float phiStep = ew::PI / numSegments;
 
 		for (int i = 0; i <= numSegments; i++)
 		{
@@ -118,7 +157,7 @@ namespace vd{
 	{
 		ew::MeshData cylinderMesh;
 		
-		const float step = 2 * 3.14159265 / (float)numSegments;
+		const float step = 2 * ew::PI / (float)numSegments;
 		for (int i = 0; i < 2; i++)
 		{
 			ew::Vertex center;

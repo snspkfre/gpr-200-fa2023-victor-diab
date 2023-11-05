@@ -89,6 +89,8 @@ int main() {
 
 	float tRad = 0.5, tThick = 0.3;
 	int tSegmentsOut = 10, tSegmentsIn = 8;
+	float mRad = 0.5, mWidth = 0.2;
+	int mSegments = 20;
 
 
 	//Create cube
@@ -101,6 +103,7 @@ int main() {
 	ew::MeshData sphereMeshData = vd::createSphere(sRad, sphereSegments);
 	ew::Mesh sphereMesh(sphereMeshData);
 	ew::MeshData torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
+	ew::MeshData mobiusMeshData = vd::createMobius(mRad, mWidth, mSegments);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
@@ -115,6 +118,8 @@ int main() {
 	sphereTransform.position.x += 1.5;
 	ew::Transform torusTransform;
 	torusTransform.position.x += 3;
+	ew::Transform mobiusTransform;
+	mobiusTransform.position.x -= 3;
 
 	resetCamera(camera,cameraController);
 
@@ -163,11 +168,14 @@ int main() {
 		cylinderMeshData = vd::createCylinder(hCylinder, cRad, cylinderSegments);
 		sphereMeshData = vd::createSphere(sRad, sphereSegments);
 		torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
+		mobiusMeshData = vd::createMobius(mRad, mWidth, mSegments);
+		
 		
 		ew::Mesh planeMesh(planeMeshData);
 		ew::Mesh cylinderMesh(cylinderMeshData);
 		ew::Mesh sphereMesh(sphereMeshData);
 		ew::Mesh torusMesh(torusMeshData);
+		ew::Mesh mobiusMesh(mobiusMeshData);
 		
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
@@ -177,6 +185,8 @@ int main() {
 		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", torusTransform.getModelMatrix());
 		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", mobiusTransform.getModelMatrix());
+		mobiusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -221,18 +231,21 @@ int main() {
 			}
 			if (ImGui::CollapsingHeader("Bonus - Dynamic")) 
 			{
-				ImGui::DragFloat("Sphere Radius", &sRad, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Sphere Radius", &sRad, 0.1f, 0.1f, 100000);
 				ImGui::DragInt("Sphere Segments", &sphereSegments, 1.0f, 3, 100000);
-				ImGui::DragFloat("Cylinder Height", &hCylinder, 0.3f, 0.1f, 100000);
-				ImGui::DragFloat("Cylinder Radius", &cRad, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Cylinder Height", &hCylinder, 0.1f, 0.1f, 100000);
+				ImGui::DragFloat("Cylinder Radius", &cRad, 0.1f, 0.1f, 100000);
 				ImGui::DragInt("Cylinder Segments", &cylinderSegments, 1.0f, 3, 10000);
-				ImGui::DragFloat("Plane Width", &wPlane, 0.3f, 0.1f, 100000);
-				ImGui::DragFloat("Plane Height", &hPlane, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Plane Width", &wPlane, 0.1f, 0.1f, 100000);
+				ImGui::DragFloat("Plane Height", &hPlane, 0.1f, 0.1f, 100000);
 				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 100000);
-				ImGui::DragFloat("Torus Radius", &tRad, 0.3f, 0.1f, 100000);
+				ImGui::DragFloat("Torus Radius", &tRad, 0.1f, 0.1f, 100000);
 				ImGui::DragFloat("Torus Thickness", &tThick, 0.1f, 0.1f, 100000);
 				ImGui::DragInt("Torus Outer Segments", &tSegmentsOut, 1.0f, 3, 100000);
 				ImGui::DragInt("Torus Inner Segments", &tSegmentsIn, 1.0f, 3, 100000);
+				ImGui::DragFloat("Mobius Radius", &mRad, 0.1f, 0.1f, 10000000);
+				ImGui::DragFloat("Mobius Width", &mWidth, 0.1f, 0.1f, 10000000);
+				ImGui::DragInt("Mobius Segments", &mSegments, 1.0f, 4, 100000);
 			}
 
 			ImGui::End();
