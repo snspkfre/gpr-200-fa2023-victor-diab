@@ -231,21 +231,37 @@ int main() {
 			}
 			if (ImGui::CollapsingHeader("Bonus - Dynamic")) 
 			{
-				ImGui::DragFloat("Sphere Radius", &sRad, 0.1f, 0.1f, 100000);
-				ImGui::DragInt("Sphere Segments", &sphereSegments, 1.0f, 3, 100000);
-				ImGui::DragFloat("Cylinder Height", &hCylinder, 0.1f, 0.1f, 100000);
-				ImGui::DragFloat("Cylinder Radius", &cRad, 0.1f, 0.1f, 100000);
-				ImGui::DragInt("Cylinder Segments", &cylinderSegments, 1.0f, 3, 10000);
-				ImGui::DragFloat("Plane Width", &wPlane, 0.1f, 0.1f, 100000);
-				ImGui::DragFloat("Plane Height", &hPlane, 0.1f, 0.1f, 100000);
-				ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 100000);
-				ImGui::DragFloat("Torus Radius", &tRad, 0.1f, 0.1f, 100000);
-				ImGui::DragFloat("Torus Thickness", &tThick, 0.1f, 0.1f, 100000);
-				ImGui::DragInt("Torus Outer Segments", &tSegmentsOut, 1.0f, 3, 100000);
-				ImGui::DragInt("Torus Inner Segments", &tSegmentsIn, 1.0f, 3, 100000);
-				ImGui::DragFloat("Mobius Radius", &mRad, 0.1f, 0.1f, 10000000);
-				ImGui::DragFloat("Mobius Width", &mWidth, 0.1f, 0.1f, 10000000);
-				ImGui::DragInt("Mobius Segments", &mSegments, 1.0f, 4, 100000);
+				if (ImGui::CollapsingHeader("Sphere"))
+				{
+					ImGui::DragFloat("Sphere Radius", &sRad, 0.1f, 0.1f, 100000);
+					ImGui::DragInt("Sphere Segments", &sphereSegments, 1.0f, 3, 100000);
+				}
+				if (ImGui::CollapsingHeader("Cylinder"))
+				{
+					ImGui::DragFloat("Cylinder Height", &hCylinder, 0.1f, 0.1f, 100000);
+					ImGui::DragFloat("Cylinder Radius", &cRad, 0.1f, 0.1f, 100000);
+					ImGui::DragInt("Cylinder Segments", &cylinderSegments, 1.0f, 3, 10000);
+				}
+				if (ImGui::CollapsingHeader("Plane"))
+				{
+					ImGui::DragFloat("Plane Width", &wPlane, 0.1f, 0.1f, 100000);
+					ImGui::DragFloat("Plane Height", &hPlane, 0.1f, 0.1f, 100000);
+					ImGui::DragInt("Plane Segments", &planeSegments, 1.0f, 1, 100000);
+				}
+				if (ImGui::CollapsingHeader("Torus"))
+				{
+					ImGui::DragFloat("Torus Radius", &tRad, 0.1f, 0.1f, 100000);
+					ImGui::DragFloat("Torus Thickness", &tThick, 0.1f, 0.1f, 100000);
+					ImGui::DragInt("Torus Outer Segments", &tSegmentsOut, 1.0f, 3, 100000);
+					ImGui::DragInt("Torus Inner Segments", &tSegmentsIn, 1.0f, 3, 100000);
+				}
+				
+				if (ImGui::CollapsingHeader("Mobius Strip"))
+				{
+					ImGui::DragFloat("Mobius Radius", &mRad, 0.1f, 0.1f, 10000000);
+					ImGui::DragFloat("Mobius Width", &mWidth, 0.1f, 0.1f, 10000000);
+					ImGui::DragInt("Mobius Segments", &mSegments, 1.0f, 4, 100000);
+				}
 			}
 
 			ImGui::End();
