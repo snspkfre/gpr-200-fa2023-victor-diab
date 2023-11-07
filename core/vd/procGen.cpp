@@ -3,6 +3,52 @@
 #include "../ew/mesh.h"
 
 namespace vd{
+	ew::MeshData createAsteroid(float radius, float thickness, int numSegmentsOut, int numSegmentsIn)
+	{
+		ew::MeshData astMesh;
+
+		float outStep = 2 * ew::PI / numSegmentsOut;
+		float inStep = 2 * ew::PI / numSegmentsIn;
+
+		for (int i = 0; i <= numSegmentsOut; i++)
+		{
+			float thetaOut = i * outStep;
+			ew::Vec2 astxy = ew::Vec2(cos(thetaOut) * cos(thetaOut) * cos(thetaOut), sin(thetaOut) * sin(thetaOut) * sin(thetaOut));
+			ew::Vec3 outPos = ew::Vec3(astxy.x, astxy.y, 0) * radius;
+			for (int j = 0; j <= numSegmentsIn; j++)
+			{
+				float thetaIn = j * inStep;
+				ew::Vec3 inPos = ew::Vec3(cos(thetaIn) * astxy.x, cos(thetaIn) * astxy.y, sin(thetaIn)) * thickness;
+				ew::Vertex temp;
+				temp.pos = inPos + outPos;
+				temp.normal = ew::Normalize(inPos);
+				temp.uv.x = (float)j / (float)numSegmentsIn;
+				temp.uv.y = (float)i / (float)numSegmentsOut;
+				astMesh.vertices.push_back(temp);
+			}
+		}
+
+
+		int columns = numSegmentsIn + 1;
+		
+		for (int i = 0; i < numSegmentsOut; i++)
+		{
+			for (int j = 0; j < numSegmentsIn; j++)
+			{
+				int start = i * columns + j;
+		
+				astMesh.indices.push_back(start + 1);
+				astMesh.indices.push_back(start);
+				astMesh.indices.push_back(start + columns + 1);
+				
+				astMesh.indices.push_back(start);
+				astMesh.indices.push_back(start + columns);
+				astMesh.indices.push_back(start + columns + 1);
+			}
+		}
+		return astMesh;
+	}
+
 	ew::MeshData createMobius(float radius, float width, int numSegments)
 	{
 		ew::MeshData mobiusMesh;

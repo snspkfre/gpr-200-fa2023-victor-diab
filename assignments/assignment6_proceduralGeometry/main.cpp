@@ -91,6 +91,8 @@ int main() {
 	int tSegmentsOut = 10, tSegmentsIn = 8;
 	float mRad = 0.5, mWidth = 0.2;
 	int mSegments = 20;
+	float aRad = 0.5, aThick = 0.3;
+	int aSegmentsOut = 24, aSegmentsIn = 10;
 
 
 	//Create cube
@@ -104,6 +106,7 @@ int main() {
 	ew::Mesh sphereMesh(sphereMeshData);
 	ew::MeshData torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
 	ew::MeshData mobiusMeshData = vd::createMobius(mRad, mWidth, mSegments);
+	ew::MeshData asteroidMeshData = vd::createAsteroid(aRad, aThick, aSegmentsOut, aSegmentsIn);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
@@ -120,6 +123,8 @@ int main() {
 	torusTransform.position.x += 3;
 	ew::Transform mobiusTransform;
 	mobiusTransform.position.x -= 3;
+	ew::Transform asteroidTransform;
+	asteroidTransform.position.x += 5;
 
 	resetCamera(camera,cameraController);
 
@@ -169,6 +174,7 @@ int main() {
 		sphereMeshData = vd::createSphere(sRad, sphereSegments);
 		torusMeshData = vd::createTorus(tRad, tThick, tSegmentsOut, tSegmentsIn);
 		mobiusMeshData = vd::createMobius(mRad, mWidth, mSegments);
+		asteroidMeshData = vd::createAsteroid(aRad, aThick, aSegmentsOut, aSegmentsIn);
 		
 		
 		ew::Mesh planeMesh(planeMeshData);
@@ -176,6 +182,7 @@ int main() {
 		ew::Mesh sphereMesh(sphereMeshData);
 		ew::Mesh torusMesh(torusMeshData);
 		ew::Mesh mobiusMesh(mobiusMeshData);
+		ew::Mesh asteroidMesh(asteroidMeshData);
 		
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
@@ -187,6 +194,8 @@ int main() {
 		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		shader.setMat4("_Model", mobiusTransform.getModelMatrix());
 		mobiusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", asteroidTransform.getModelMatrix());
+		asteroidMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -261,6 +270,14 @@ int main() {
 					ImGui::DragFloat("Mobius Radius", &mRad, 0.1f, 0.1f, 10000000);
 					ImGui::DragFloat("Mobius Width", &mWidth, 0.1f, 0.1f, 10000000);
 					ImGui::DragInt("Mobius Segments", &mSegments, 1.0f, 4, 100000);
+				}
+
+				if (ImGui::CollapsingHeader("Asteroid"))
+				{
+					ImGui::DragFloat("Asteroid Radius", &aRad, 0.1f, 0.1f, 100000);
+					ImGui::DragFloat("Asteroid Thickness", &aThick, 0.1f, 0.1f, 100000);
+					ImGui::DragInt("Asteroid Outer Segments", &aSegmentsOut, 4.0f, 4, 100000);
+					ImGui::DragInt("Asteroid Inner Segments", &aSegmentsIn, 1.0f, 3, 100000);
 				}
 			}
 
