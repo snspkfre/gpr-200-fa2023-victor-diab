@@ -21,6 +21,18 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 int SCREEN_WIDTH = 1080;
 int SCREEN_HEIGHT = 720;
 
+struct Light{
+	ew::Vec3 position;
+	ew::Vec3 color;
+};
+
+struct Material {
+	float ambientK; //Ambient coefficient (0-1)							  
+	float diffuseK; //Diffuse coefficient (0-1)							  
+	float specular; //Specular coefficient (0-1)						  
+	float shininess; //Shininess										  
+};																		  
+
 float prevTime;
 ew::Vec3 bgColor = ew::Vec3(0.1f);
 
