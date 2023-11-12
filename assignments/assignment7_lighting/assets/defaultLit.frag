@@ -18,13 +18,50 @@ struct Light
 uniform Light _Lights[MAX_LIGHTS];
 
 uniform vec3 camPos;
+uniform float shininess;
+uniform float ambient;
+uniform float diffuse;
+uniform float specular;
+uniform int mode;
+uniform int numLights;
+uniform float lightPower;
 
 void main(){
-	vec3 normal = normalize(fs_in.WorldNormal);
-	float intensity = 0.5;
-	float iDif = intensity * max(dot(normal, normalize(_Lights[0].position - fs_in.WorldPosition)), 0);
-	vec3 r = 2 * dot(normalize(_Lights[0].position - fs_in.WorldPosition), normal) * normal - (_Lights[0].position - fs_in.WorldPosition);
-	float iSpec = 0.1 * max(dot(r, camPos), 0);
+	vec3 ambient = vec3(1.0) * ambient;
+	vec3 sumColor = vec3(0);
+	for(int i = 0; i < numLights; i++)
+	{
+		vec3 normal = normalize(fs_in.WorldNormal);
+		vec3 lightDirection = _Lights[i].position - fs_in.WorldPosition;
+		lightDirection = normalize(lightDirection);
+		float dist = length(lightDirection);
+		dist = dist * dist;
+		vec3 dif = _Lights[i].color * diffuse;
+		vec3 specCol = _Lights[i].color * specular;
 
-	FragColor = texture(_Texture,fs_in.UV) * (iSpec + iDif);
+		float iDif = max(dot(normal, lightDirection), 0);
+		float spec = 0.0;
+		if(iDif > 0)
+		{
+			vec3 viewDir = normalize(camPos - fs_in.WorldPosition);
+			if(mode == 0)
+			{
+				vec3 halfDir = normalize(lightDirection + viewDir);
+				float specAngle = max(dot(halfDir, normal), 0.0);
+				spec = pow(specAngle, shininess);
+			}
+			else
+			{
+				vec3 r = reflect(-lightDirection, normal);
+				float specAngle = max(dot(r, viewDir), 0.0);
+				spec = pow(specAngle, shininess/4.0);
+			}
+		}
+		sumColor += dif * iDif * _Lights[i].color * lightPower / dist + 
+					 specCol * spec * _Lights[i].color * lightPower / dist;
+	}
+	vec3 color = ambient + sumColor;
+
+	vec4 textColor = texture(_Texture,fs_in.UV);
+	FragColor = vec4(textColor.rgb * color, textColor.a);
 }

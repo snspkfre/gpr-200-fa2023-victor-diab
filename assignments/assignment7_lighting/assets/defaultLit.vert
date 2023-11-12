@@ -5,8 +5,8 @@ layout(location = 2) in vec2 vUV;
 
 out Surface{
 	vec2 UV;
-	vec3 WorldPosition;
-	vec3 WorldNormal;
+	vec3 WorldPosition;//Per-fragment interpolated world position
+	vec3 WorldNormal;//Per-fragment interpolated world normal
 }vs_out;
 
 uniform mat4 _Model;
