@@ -72,7 +72,7 @@ int main() {
 
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
-
+	
 	//Create cube
 	ew::Mesh cubeMesh(ew::createCube(1.0f));
 	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
@@ -87,6 +87,9 @@ int main() {
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 	sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
+
+	Light light;
+	light.position.z += 5;
 
 	resetCamera(camera,cameraController);
 
@@ -109,6 +112,9 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		shader.setVec3("_Lights[0].position", light.position);
+		shader.setVec3("_Lights[0].color", light.position);
+		shader.setVec3("camPos", camera.position);
 
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
