@@ -117,6 +117,7 @@ int main() {
 	int mode = 0;
 	int numLights = 1;
 	float lightPower = 0.5;
+	bool orbitting = true;
 
 	resetCamera(camera,cameraController);
 
@@ -127,11 +128,14 @@ int main() {
 		float deltaTime = time - prevTime;
 		prevTime = time;
 
-		for (int i = 0; i < 4; i++)
+		if (orbitting)
 		{
-			lightTransform[i].position.x = cos(time + (2 * ew::PI / (numLights) * i)) * 2;
-			lightTransform[i].position.z = (sin(time + (2 * ew::PI / (numLights) * i)) - 1) * 3;
-			light[i].position = lightTransform[i].position;
+			for (int i = 0; i < 4; i++)
+			{
+				lightTransform[i].position.x = cos(time + (2 * ew::PI / (numLights)*i)) * 2;
+				lightTransform[i].position.z = (sin(time + (2 * ew::PI / (numLights)*i)) - 1) * 3;
+				light[i].position = lightTransform[i].position;
+			}
 		}
 
 		//Update camera
@@ -198,13 +202,18 @@ int main() {
 				ImGui::SliderFloat("Diffuse", &mat.diffuseK, 0.0, 1.0);
 				ImGui::SliderFloat("Specular", &mat.specular, 0.0, 1.0);
 				ImGui::SliderFloat("Shininess", &mat.shininess, 0.0, 1024);
-				ImGui::DragFloat("Light Power", &lightPower);
+				ImGui::SliderFloat("Light Power", &lightPower, 0.0, 1.0f);
 				ImGui::SliderInt("Number Of Lights", &numLights, 0, 4);
+				ImGui::Checkbox("Orbitting", &orbitting);
 				for (int i = 0; i < numLights; i++)
 				{
-					std::string lightstr = "Light " + std::to_string(i + 1) + " Color";
-					ImGui::ColorEdit3(lightstr.c_str(), &light[i].color.x);
-					ImGui::DragFloat3("Light Position", &lightTransform->position.x, 0.0f);
+					std::string lightColorStr = "Light " + std::to_string(i + 1) + " Color";
+					std::string lightPosStr = "Light " + std::to_string(i + 1) + " Position";
+					ImGui::ColorEdit3(lightColorStr.c_str(), &light[i].color.x);
+					if(orbitting)
+						ImGui::DragFloat3(lightPosStr.c_str(), &lightTransform[i].position.x, 0.0f);
+					else
+						ImGui::DragFloat3(lightPosStr.c_str(), &lightTransform[i].position.x, 0.1f);
 				}
 			}
 			if (ImGui::CollapsingHeader("Camera")) {

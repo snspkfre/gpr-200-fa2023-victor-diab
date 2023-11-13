@@ -57,8 +57,8 @@ void main(){
 				spec = pow(specAngle, shininess/4.0);
 			}
 		}
-		sumColor += dif * iDif * _Lights[i].color * lightPower / dist + 
-					 specCol * spec * _Lights[i].color * lightPower / dist;
+		sumColor += dif * iDif * _Lights[i].color * lightPower + 
+					 specCol * spec * _Lights[i].color * lightPower;
 	}
 	vec3 color = ambient + sumColor;
 
