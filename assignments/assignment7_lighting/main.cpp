@@ -204,6 +204,7 @@ int main() {
 				{
 					std::string lightstr = "Light " + std::to_string(i + 1) + " Color";
 					ImGui::ColorEdit3(lightstr.c_str(), &light[i].color.x);
+					ImGui::DragFloat3("Light Position", &lightTransform->position.x, 0.0f);
 				}
 			}
 			if (ImGui::CollapsingHeader("Camera")) {
