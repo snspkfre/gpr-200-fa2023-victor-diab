@@ -18,6 +18,7 @@ struct Light
 uniform Light _Lights[MAX_LIGHTS];
 
 uniform vec3 camPos;
+uniform vec3 camAngle;
 uniform float shininess;
 uniform float ambient;
 uniform float diffuse;
@@ -25,6 +26,7 @@ uniform float specular;
 uniform int mode;
 uniform int numLights;
 uniform float lightPower;
+uniform int flashlight;
 
 void main(){
 	vec3 ambient = vec3(1.0) * ambient;
@@ -44,6 +46,20 @@ void main(){
 		if(iDif > 0)
 		{
 			vec3 viewDir = normalize(camPos - fs_in.WorldPosition);
+			if(flashlight == 1)
+			{
+				float cosang = dot(normalize(camAngle), normalize(fs_in.WorldPosition - camPos));
+				float maxcos = cos(3.1415 / 9);
+				float otherang = cos(3.1415 / 10);
+				if(cosang < maxcos)
+				{
+					iDif = 0;
+				}
+				else if(cosang < otherang)
+				{
+					iDif *= smoothstep(maxcos, otherang, cosang);
+				}
+			}
 			if(mode == 0)
 			{
 				vec3 halfDir = normalize(lightDirection + viewDir);

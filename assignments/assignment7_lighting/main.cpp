@@ -118,6 +118,7 @@ int main() {
 	int numLights = 1;
 	float lightPower = 0.5;
 	bool orbitting = true;
+	bool flashlight = true;
 
 	resetCamera(camera,cameraController);
 
@@ -130,6 +131,7 @@ int main() {
 
 		if (orbitting)
 		{
+			flashlight = false;
 			for (int i = 0; i < 4; i++)
 			{
 				lightTransform[i].position.x = cos(time + (2 * ew::PI / (numLights)*i)) * 2;
@@ -137,7 +139,12 @@ int main() {
 				light[i].position = lightTransform[i].position;
 			}
 		}
-
+		if (flashlight)
+		{
+			orbitting = false;
+			numLights = 1;
+			lightTransform[0].position = camera.position;
+		}
 		//Update camera
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
 		cameraController.Move(window, &camera, deltaTime);
@@ -156,6 +163,7 @@ int main() {
 			shader.setVec3("_Lights[" + std::to_string(i) + "].color", light[i].color);
 		}
 		shader.setVec3("camPos", camera.position);
+		shader.setVec3("camAngle", (camera.target - camera.position));
 
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
@@ -176,18 +184,24 @@ int main() {
 		shader.setInt("mode", mode);
 		shader.setInt("numLights", numLights);
 		shader.setFloat("lightPower", lightPower);
+		shader.setInt("flashlight", flashlight);
 		
 		//TODO: Render point lights
-		unlit.use();
-		for (int i = 0; i < numLights; i++)
+		if (!flashlight)
 		{
-			unlit.setMat4("_Model", lightTransform[i].getModelMatrix());
-			unlit.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-			unlit.setVec3("_Color", light[i].color);
-			lightMesh[i].draw();
+			unlit.use();
+			for (int i = 0; i < numLights; i++)
+			{
+				unlit.setMat4("_Model", lightTransform[i].getModelMatrix());
+				unlit.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+				unlit.setVec3("_Color", light[i].color);
+				lightMesh[i].draw();
+			}
 		}
-
-
+		for (int i = 0; i < 4; i++)
+		{
+			light[i].position = lightTransform[i].position;
+		}
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -198,6 +212,7 @@ int main() {
 			if (ImGui::CollapsingHeader("LightSettings"))
 			{
 				ImGui::InputInt("mode", &mode);
+				ImGui::Checkbox("Flashlight", &flashlight);
 				ImGui::SliderFloat("Ambient", &mat.ambientK, 0.0, 1.0);
 				ImGui::SliderFloat("Diffuse", &mat.diffuseK, 0.0, 1.0);
 				ImGui::SliderFloat("Specular", &mat.specular, 0.0, 1.0);
